@@ -53,18 +53,25 @@ export const ParallelDataOrchestrator: React.FC = () => {
     { id: "plane_0", label: "Plane 0", position: [0, -500, 0], scale: 100 }
   ];
   const [planesConfig, setPlanesConfig] = useState(() => {
-    const saved = localStorage.getItem('env_planesConfig'); return saved ? JSON.parse(saved) : initialPlanes;
+    const saved = localStorage.getItem('env_planesConfig_v2'); return saved ? JSON.parse(saved) : initialPlanes;
   });
 
   const initialWalls: { id: string; label: string; position: [number, number, number]; scale: number }[] = [
     { id: "wall_0", label: "Wall 0: Base", position: [0, 0, 0], scale: 1 }
   ];
   const [wallsConfig, setWallsConfig] = useState(() => {
-    const saved = localStorage.getItem('env_wallsConfig'); return saved ? JSON.parse(saved) : initialWalls;
+    const saved = localStorage.getItem('env_wallsConfig_v2'); return saved ? JSON.parse(saved) : initialWalls;
+  });
+
+  const initialPlaques: { id: string; label: string; position: [number, number, number]; scale: number; rotation: [number, number, number] }[] = [
+    { id: "plaque_0", label: "Plaque 0: Landing", position: [0, 50, 0], scale: 2, rotation: [0, 0, 0] }
+  ];
+  const [plaquesConfig, setPlaquesConfig] = useState(() => {
+    const saved = localStorage.getItem('env_plaquesConfig_v2'); return saved ? JSON.parse(saved) : initialPlaques;
   });
 
   const initialOrbs: { id: string; label: string; position: [number, number, number] }[] = [
-    { id: "orb_0", label: "Orb 0: Landing", position: [0, 50, 0] },
+    { id: "orb_0", label: "Orb 0: Landing", position: [0, 250, 0] },
     { id: "orb_1", label: "Orb 1: Chatbot", position: [-300, 50, -50] },
     { id: "orb_2", label: "Orb 2: Particle Sandbox", position: [0, 100, -200] },
     { id: "orb_3", label: "Orb 3: Video", position: [300, 50, -50] },
@@ -76,17 +83,18 @@ export const ParallelDataOrchestrator: React.FC = () => {
     { id: "orb_9", label: "Orb 9: Data Ingestion", position: [-1200, 50, -200] }
   ];
   const [orbsConfig, setOrbsConfig] = useState(() => {
-    const saved = localStorage.getItem('env_orbsConfig'); return saved ? JSON.parse(saved) : initialOrbs;
+    const saved = localStorage.getItem('env_orbsConfig_v2'); return saved ? JSON.parse(saved) : initialOrbs;
   });
 
   useEffect(() => {
     localStorage.setItem('env_sandboxDensity', sandboxDensity.toString());
     localStorage.setItem('env_sandboxOrbScale', sandboxOrbScale.toString());
     localStorage.setItem('env_sandboxWallScale', sandboxWallScale.toString());
-    localStorage.setItem('env_planesConfig', JSON.stringify(planesConfig));
-    localStorage.setItem('env_wallsConfig', JSON.stringify(wallsConfig));
-    localStorage.setItem('env_orbsConfig', JSON.stringify(orbsConfig));
-  }, [sandboxDensity, sandboxOrbScale, sandboxWallScale, planesConfig, wallsConfig, orbsConfig]);
+    localStorage.setItem('env_planesConfig_v2', JSON.stringify(planesConfig));
+    localStorage.setItem('env_wallsConfig_v2', JSON.stringify(wallsConfig));
+    localStorage.setItem('env_orbsConfig_v2', JSON.stringify(orbsConfig));
+    localStorage.setItem('env_plaquesConfig_v2', JSON.stringify(plaquesConfig));
+  }, [sandboxDensity, sandboxOrbScale, sandboxWallScale, planesConfig, wallsConfig, orbsConfig, plaquesConfig]);
 
   const [selectedElementId, setSelectedElementId] = useState<string>("wall_0");
   const [isSandboxMenuMinimized, setIsSandboxMenuMinimized] = useState<boolean>(false);
@@ -98,6 +106,10 @@ export const ParallelDataOrchestrator: React.FC = () => {
 
   const updateOrbPosition = (id: string, axis: 0 | 1 | 2, value: number) => {
     setOrbsConfig((prev) => prev.map(o => o.id === id ? { ...o, position: Object.assign([...o.position], { [axis]: value }) } as typeof o : o));
+  };
+
+  const updatePlaquePosition = (id: string, axis: 0 | 1 | 2, value: number) => {
+    setPlaquesConfig((prev) => prev.map(o => o.id === id ? { ...o, position: Object.assign([...o.position], { [axis]: value }) } as typeof o : o));
   };
 
   const updateWallPosition = (id: string, axis: 0 | 1 | 2, value: number) => {
@@ -115,6 +127,8 @@ export const ParallelDataOrchestrator: React.FC = () => {
       setWallsConfig((prev) => prev.map(w => w.id === id ? { ...w, position } : w));
     } else if (id.startsWith("plane_")) {
       setPlanesConfig((prev) => prev.map(p => p.id === id ? { ...p, position } : p));
+    } else if (id.startsWith("plaque_")) {
+      setPlaquesConfig((prev) => prev.map(p => p.id === id ? { ...p, position } : p));
     }
     setSelectedElementId(id);
   };
@@ -197,6 +211,19 @@ export const ParallelDataOrchestrator: React.FC = () => {
           {
             ...original,
             id: `orb_${Date.now()}`,
+            label: `${original.label} (Copy)`,
+            position: [original.position[0] + 50, original.position[1], original.position[2] + 50]
+          }
+        ]);
+      }
+    } else if (selectedElementId.startsWith("plaque")) {
+      const original = plaquesConfig.find(p => p.id === selectedElementId);
+      if (original) {
+        setPlaquesConfig(prev => [
+          ...prev,
+          {
+            ...original,
+            id: `plaque_${Date.now()}`,
             label: `${original.label} (Copy)`,
             position: [original.position[0] + 50, original.position[1], original.position[2] + 50]
           }
@@ -689,6 +716,7 @@ export const ParallelDataOrchestrator: React.FC = () => {
                 wallsConfig={wallsConfig}
                 planesConfig={planesConfig}
                 orbPositions={orbPositions}
+                plaquesConfig={plaquesConfig}
                 activeRoomIndex={activeRoomIndex}
                 selectedElementId={selectedElementId}
                 onElementPositionChange={handleElementPositionChange}
@@ -783,6 +811,11 @@ export const ParallelDataOrchestrator: React.FC = () => {
                                <option key={orb.id} value={orb.id}>{orb.label}</option>
                              ))}
                            </optgroup>
+                           <optgroup label="Plaques">
+                             {plaquesConfig.map((plaque) => (
+                               <option key={plaque.id} value={plaque.id}>{plaque.label}</option>
+                             ))}
+                           </optgroup>
                            <optgroup label="Planes">
                              {planesConfig.map((plane) => (
                                <option key={plane.id} value={plane.id}>{plane.label}</option>
@@ -795,7 +828,23 @@ export const ParallelDataOrchestrator: React.FC = () => {
                          <button onClick={addNewWall} className="bg-cyan-600/10 hover:bg-cyan-600/30 text-cyan-400 border border-cyan-500/30 py-3 rounded-lg font-mono text-xs uppercase tracking-widest transition-all hover:shadow-[0_0_15px_rgba(0,255,255,0.2)]">+ Wall</button>
                          <button onClick={addNewPlane} className="bg-purple-600/10 hover:bg-purple-600/30 text-purple-400 border border-purple-500/30 py-3 rounded-lg font-mono text-xs uppercase tracking-widest transition-all hover:shadow-[0_0_15px_rgba(168,85,247,0.2)]">+ Plane</button>
                          <button onClick={addNewOrb} className="bg-fuchsia-600/10 hover:bg-fuchsia-600/30 text-fuchsia-400 border border-fuchsia-500/30 py-3 rounded-lg font-mono text-xs uppercase tracking-widest transition-all hover:shadow-[0_0_15px_rgba(255,0,255,0.2)]">+ Orb</button>
-                         <button onClick={duplicateSelectedElement} className="bg-emerald-600/10 hover:bg-emerald-600/30 text-emerald-400 border border-emerald-500/30 py-3 rounded-lg font-mono text-xs uppercase tracking-widest transition-all hover:shadow-[0_0_15px_rgba(16,185,129,0.2)]">Duplicate</button>
+                         <button onClick={() => {
+                           setPlaquesConfig(prev => [
+                             ...prev,
+                             {
+                               id: `plaque_${Date.now()}`,
+                               label: `Custom Plaque ${prev.length}`,
+                               position: [
+                                 Math.floor(Math.random() * 400 - 200),
+                                 50,
+                                 Math.floor(Math.random() * 400 - 200)
+                               ],
+                               scale: 2,
+                               rotation: [0, 0, 0]
+                             }
+                           ]);
+                         }} className="bg-orange-600/10 hover:bg-orange-600/30 text-orange-400 border border-orange-500/30 py-3 rounded-lg font-mono text-xs uppercase tracking-widest transition-all hover:shadow-[0_0_15px_rgba(255,165,0,0.2)]">+ Plaque</button>
+                         <button onClick={duplicateSelectedElement} className="col-span-2 bg-emerald-600/10 hover:bg-emerald-600/30 text-emerald-400 border border-emerald-500/30 py-3 rounded-lg font-mono text-xs uppercase tracking-widest transition-all hover:shadow-[0_0_15px_rgba(16,185,129,0.2)]">Duplicate Selected</button>
                        </div>
 
                        <div className="px-5 py-6 border border-fuchsia-500/20 rounded-xl bg-black/60 flex flex-col gap-5 drop-shadow-lg">
@@ -806,9 +855,10 @@ export const ParallelDataOrchestrator: React.FC = () => {
                          {(() => {
                            const isWall = selectedElementId.startsWith("wall");
                            const isPlane = selectedElementId.startsWith("plane");
-                           const targetList = isWall ? wallsConfig : isPlane ? planesConfig : orbsConfig;
+                           const isPlaque = selectedElementId.startsWith("plaque");
+                           const targetList = isWall ? wallsConfig : isPlane ? planesConfig : isPlaque ? plaquesConfig : orbsConfig;
                            const targetItem = targetList.find(x => x.id === selectedElementId);
-                           const updatePos = isWall ? updateWallPosition : isPlane ? updatePlanePosition : updateOrbPosition;
+                           const updatePos = isWall ? updateWallPosition : isPlane ? updatePlanePosition : isPlaque ? updatePlaquePosition : updateOrbPosition;
 
                            if (!targetItem) return <div className="text-fuchsia-500/50 text-xs font-mono">No element selected.</div>;
                            return (

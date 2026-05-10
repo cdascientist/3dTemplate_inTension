@@ -7,6 +7,7 @@ import { AutomatedMemoryCleaner } from '../lib/AutomatedMemoryCleaner';
 import { SocialIcons3D } from './SocialIcons3D';
 import { HugeParticleOrb } from './HugeParticleOrb';
 import { positionWorkerCode, lookAtWorkerCode } from '../workers/PanningWorker';
+import { InTensionPlaque3D } from './InTensionPlaque3D';
 
 interface HolographicRoomSceneProperties {
     aggregatedParallelDataChunksMatrix: any[];
@@ -16,6 +17,7 @@ interface HolographicRoomSceneProperties {
     wallsConfig?: any[];
     planesConfig?: any[];
     orbPositions?: [number, number, number][];
+    plaquesConfig?: any[];
     activeRoomIndex?: number;
     selectedElementId?: string;
     onElementPositionChange?: (id: string, pos: [number, number, number]) => void;
@@ -30,6 +32,7 @@ export const HolographicRoomScene: React.FC<HolographicRoomSceneProperties> = Re
     wallsConfig = [],
     planesConfig = [],
     orbPositions,
+    plaquesConfig = [],
     activeRoomIndex = 0,
     selectedElementId = "",
     onElementPositionChange,
@@ -259,6 +262,11 @@ export const HolographicRoomScene: React.FC<HolographicRoomSceneProperties> = Re
             if (plane) {
                 currentY = plane.position[1];
             }
+        } else if (selectedElementId.startsWith("plaque")) {
+            const plaque = plaquesConfig.find(p => p.id === selectedElementId);
+            if (plaque) {
+                currentY = plaque.position[1];
+            }
         }
 
         if (e.point) {
@@ -285,6 +293,11 @@ export const HolographicRoomScene: React.FC<HolographicRoomSceneProperties> = Re
             const plane = planesConfig.find(p => p.id === selectedElementId);
             if (plane) {
                 currentY = plane.position[1];
+            }
+        } else if (selectedElementId.startsWith("plaque")) {
+            const plaque = plaquesConfig.find(p => p.id === selectedElementId);
+            if (plaque) {
+                currentY = plaque.position[1];
             }
         }
 
@@ -368,6 +381,16 @@ export const HolographicRoomScene: React.FC<HolographicRoomSceneProperties> = Re
                     />
                 );
             })}
+
+            {plaquesConfig.map((plaque) => (
+                <InTensionPlaque3D
+                    key={plaque.id}
+                    position={plaque.position}
+                    scale={plaque.scale}
+                    isHighlighted={selectedElementId === plaque.id}
+                    onClick={() => handleElementClick(plaque.id)}
+                />
+            ))}
 
             <SocialIcons3D />
         </group>
