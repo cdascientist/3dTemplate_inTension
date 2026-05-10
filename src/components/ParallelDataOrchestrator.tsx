@@ -67,23 +67,19 @@ export const ParallelDataOrchestrator: React.FC = () => {
     { id: "plaque_0", label: "Plaque 0: Landing", position: [0, 50, 0], scale: 2, rotation: [0, 0, 0] }
   ];
   const [plaquesConfig, setPlaquesConfig] = useState(() => {
-    const saved = localStorage.getItem('env_plaquesConfig_v2'); return saved ? JSON.parse(saved) : initialPlaques;
+    const saved = localStorage.getItem('env_plaquesConfig_v3'); return saved ? JSON.parse(saved) : initialPlaques;
   });
 
-  const initialOrbs: { id: string; label: string; position: [number, number, number] }[] = [
-    { id: "orb_0", label: "Orb 0: Landing", position: [0, 250, 0] },
-    { id: "orb_1", label: "Orb 1: Chatbot", position: [-300, 50, -50] },
-    { id: "orb_2", label: "Orb 2: Particle Sandbox", position: [0, 100, -200] },
-    { id: "orb_3", label: "Orb 3: Video", position: [300, 50, -50] },
-    { id: "orb_4", label: "Orb 4: Architecture", position: [600, 50, -100] },
-    { id: "orb_5", label: "Orb 5: Resume", position: [-600, 50, -100] },
-    { id: "orb_6", label: "Orb 6: Dynamic Thread", position: [900, 50, -150] },
-    { id: "orb_7", label: "Orb 7: Nexus", position: [-900, 50, -150] },
-    { id: "orb_8", label: "Orb 8: Canvas Delegation", position: [1200, 50, -200] },
-    { id: "orb_9", label: "Orb 9: Data Ingestion", position: [-1200, 50, -200] }
-  ];
+  const initialOrbs: { id: string; label: string; position: [number, number, number] }[] = [];
   const [orbsConfig, setOrbsConfig] = useState(() => {
-    const saved = localStorage.getItem('env_orbsConfig_v2'); return saved ? JSON.parse(saved) : initialOrbs;
+    const saved = localStorage.getItem('env_orbsConfig_v3'); return saved ? JSON.parse(saved) : initialOrbs;
+  });
+
+  const initialPath: { id: string; pageIndex: number; targetId: string }[] = [
+    { id: "path_0", pageIndex: 0, targetId: "plaque_0" }
+  ];
+  const [pathConfig, setPathConfig] = useState(() => {
+    const saved = localStorage.getItem('env_pathConfig_v3'); return saved ? JSON.parse(saved) : initialPath;
   });
 
   useEffect(() => {
@@ -92,9 +88,10 @@ export const ParallelDataOrchestrator: React.FC = () => {
     localStorage.setItem('env_sandboxWallScale', sandboxWallScale.toString());
     localStorage.setItem('env_planesConfig_v2', JSON.stringify(planesConfig));
     localStorage.setItem('env_wallsConfig_v2', JSON.stringify(wallsConfig));
-    localStorage.setItem('env_orbsConfig_v2', JSON.stringify(orbsConfig));
-    localStorage.setItem('env_plaquesConfig_v2', JSON.stringify(plaquesConfig));
-  }, [sandboxDensity, sandboxOrbScale, sandboxWallScale, planesConfig, wallsConfig, orbsConfig, plaquesConfig]);
+    localStorage.setItem('env_orbsConfig_v3', JSON.stringify(orbsConfig));
+    localStorage.setItem('env_plaquesConfig_v3', JSON.stringify(plaquesConfig));
+    localStorage.setItem('env_pathConfig_v3', JSON.stringify(pathConfig));
+  }, [sandboxDensity, sandboxOrbScale, sandboxWallScale, planesConfig, wallsConfig, orbsConfig, plaquesConfig, pathConfig]);
 
   const [selectedElementId, setSelectedElementId] = useState<string>("wall_0");
   const [isSandboxMenuMinimized, setIsSandboxMenuMinimized] = useState<boolean>(false);
@@ -230,6 +227,34 @@ export const ParallelDataOrchestrator: React.FC = () => {
         ]);
       }
     }
+  };
+
+  const removeSelectedElement = () => {
+    if (selectedElementId.startsWith("wall")) {
+      setWallsConfig(prev => prev.filter(w => w.id !== selectedElementId));
+    } else if (selectedElementId.startsWith("plane")) {
+      setPlanesConfig(prev => prev.filter(p => p.id !== selectedElementId));
+    } else if (selectedElementId.startsWith("orb")) {
+      setOrbsConfig(prev => prev.filter(o => o.id !== selectedElementId));
+    } else if (selectedElementId.startsWith("plaque")) {
+      setPlaquesConfig(prev => prev.filter(p => p.id !== selectedElementId));
+    }
+    setSelectedElementId("");
+  };
+
+  const updatePathTarget = (id: string, targetId: string) => {
+    setPathConfig(prev => prev.map(p => p.id === id ? { ...p, targetId } : p));
+  };
+
+  const addPath = () => {
+    setPathConfig(prev => [
+      ...prev,
+      { id: `path_${Date.now()}`, pageIndex: prev.length, targetId: plaquesConfig[0]?.id || "wall_0" }
+    ]);
+  };
+
+  const removePath = (id: string) => {
+    setPathConfig(prev => prev.filter(p => p.id !== id));
   };
 
   const updateWallScale = (id: string, scale: number) => {
@@ -716,7 +741,9 @@ export const ParallelDataOrchestrator: React.FC = () => {
                 wallsConfig={wallsConfig}
                 planesConfig={planesConfig}
                 orbPositions={orbPositions}
+                orbsConfig={orbsConfig}
                 plaquesConfig={plaquesConfig}
+                pathConfig={pathConfig}
                 activeRoomIndex={activeRoomIndex}
                 selectedElementId={selectedElementId}
                 onElementPositionChange={handleElementPositionChange}
@@ -791,7 +818,7 @@ export const ParallelDataOrchestrator: React.FC = () => {
                       Comprehensive Environment Construction. Modify Orbs, Planes, Walls, and Global Properties.
                     </p>
                     
-                    <div className="flex flex-col gap-6 pb-20">
+                     <div className="flex flex-col gap-6 pb-20">
                        <div className="flex flex-col gap-2 bg-fuchsia-900/10 p-4 rounded-xl border border-fuchsia-500/20">
                          <label className="text-fuchsia-300 font-mono text-xs uppercase tracking-wider mb-2 flex items-center gap-2">
                            <span className="w-2 h-2 bg-fuchsia-500 rounded-full"></span> Scene Graph
@@ -824,6 +851,39 @@ export const ParallelDataOrchestrator: React.FC = () => {
                          </select>
                        </div>
 
+                       <div className="flex flex-col gap-2 bg-fuchsia-900/10 p-4 rounded-xl border border-fuchsia-500/20">
+                         <label className="text-fuchsia-300 font-mono text-xs uppercase tracking-wider mb-2 flex items-center gap-2">
+                           <span className="w-2 h-2 bg-fuchsia-500 rounded-full"></span> Camera Path Sequence
+                         </label>
+                         <div className="flex flex-col gap-2 max-h-48 overflow-y-auto custom-scrollbar">
+                           {pathConfig.map((path, idx) => (
+                             <div key={path.id} className="flex gap-2 items-center">
+                               <span className="text-xs font-mono text-fuchsia-400 w-16">Page {path.pageIndex}</span>
+                               <select
+                                 value={path.targetId}
+                                 onChange={(e) => updatePathTarget(path.id, e.target.value)}
+                                 className="bg-black/80 border border-fuchsia-400/50 text-fuchsia-300 p-2 rounded flex-1 font-mono text-xs focus:outline-none"
+                               >
+                                 <optgroup label="Plaques">
+                                   {plaquesConfig.map((p) => <option key={p.id} value={p.id}>{p.label}</option>)}
+                                 </optgroup>
+                                 <optgroup label="Orbs">
+                                   {orbsConfig.map((o) => <option key={o.id} value={o.id}>{o.label}</option>)}
+                                 </optgroup>
+                                 <optgroup label="Walls">
+                                   {wallsConfig.map((w) => <option key={w.id} value={w.id}>{w.label}</option>)}
+                                 </optgroup>
+                                 <optgroup label="Planes">
+                                   {planesConfig.map((p) => <option key={p.id} value={p.id}>{p.label}</option>)}
+                                 </optgroup>
+                               </select>
+                               <button onClick={() => removePath(path.id)} className="text-red-500 hover:text-red-400 text-xs font-mono px-2 py-1 bg-red-900/20 rounded">X</button>
+                             </div>
+                           ))}
+                         </div>
+                         <button onClick={addPath} className="bg-fuchsia-600/10 hover:bg-fuchsia-600/30 text-fuchsia-400 border border-fuchsia-500/30 py-2 rounded font-mono text-xs mt-2 uppercase transition-all">+ Add Path Node</button>
+                       </div>
+
                        <div className="grid grid-cols-2 gap-2">
                          <button onClick={addNewWall} className="bg-cyan-600/10 hover:bg-cyan-600/30 text-cyan-400 border border-cyan-500/30 py-3 rounded-lg font-mono text-xs uppercase tracking-widest transition-all hover:shadow-[0_0_15px_rgba(0,255,255,0.2)]">+ Wall</button>
                          <button onClick={addNewPlane} className="bg-purple-600/10 hover:bg-purple-600/30 text-purple-400 border border-purple-500/30 py-3 rounded-lg font-mono text-xs uppercase tracking-widest transition-all hover:shadow-[0_0_15px_rgba(168,85,247,0.2)]">+ Plane</button>
@@ -845,6 +905,7 @@ export const ParallelDataOrchestrator: React.FC = () => {
                            ]);
                          }} className="bg-orange-600/10 hover:bg-orange-600/30 text-orange-400 border border-orange-500/30 py-3 rounded-lg font-mono text-xs uppercase tracking-widest transition-all hover:shadow-[0_0_15px_rgba(255,165,0,0.2)]">+ Plaque</button>
                          <button onClick={duplicateSelectedElement} className="col-span-2 bg-emerald-600/10 hover:bg-emerald-600/30 text-emerald-400 border border-emerald-500/30 py-3 rounded-lg font-mono text-xs uppercase tracking-widest transition-all hover:shadow-[0_0_15px_rgba(16,185,129,0.2)]">Duplicate Selected</button>
+                         <button onClick={removeSelectedElement} className="col-span-2 bg-red-600/10 hover:bg-red-600/30 text-red-400 border border-red-500/30 py-3 rounded-lg font-mono text-xs uppercase tracking-widest transition-all hover:shadow-[0_0_15px_rgba(239,68,68,0.2)]">Remove Selected</button>
                        </div>
 
                        <div className="px-5 py-6 border border-fuchsia-500/20 rounded-xl bg-black/60 flex flex-col gap-5 drop-shadow-lg">

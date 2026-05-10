@@ -17,7 +17,9 @@ interface HolographicRoomSceneProperties {
     wallsConfig?: any[];
     planesConfig?: any[];
     orbPositions?: [number, number, number][];
+    orbsConfig?: any[];
     plaquesConfig?: any[];
+    pathConfig?: { id: string; pageIndex: number; targetId: string }[];
     activeRoomIndex?: number;
     selectedElementId?: string;
     onElementPositionChange?: (id: string, pos: [number, number, number]) => void;
@@ -32,7 +34,9 @@ export const HolographicRoomScene: React.FC<HolographicRoomSceneProperties> = Re
     wallsConfig = [],
     planesConfig = [],
     orbPositions,
+    orbsConfig = [],
     plaquesConfig = [],
+    pathConfig = [],
     activeRoomIndex = 0,
     selectedElementId = "",
     onElementPositionChange,
@@ -99,37 +103,58 @@ export const HolographicRoomScene: React.FC<HolographicRoomSceneProperties> = Re
             let tp = [0, 50, 600];
             let tl = [0, 50, 0];
 
-            if (destIndex === 0) { // Landing
-                tp = [0, 50, 600];
-                tl = [0, 50, 0];
-            } else if (destIndex === 1) { // ChatBot
-                tp = [-300, 50, 400];
-                tl = [-300, 50, -50];
-            } else if (destIndex === 2) { // Particle Sandbox
-                // Moved further back so we can see the cloud and all orbs
-                tp = [0, 800, 1800]; 
-                tl = [0, 100, -200];
-            } else if (destIndex === 3) { // Video
-                tp = [300 + (slideIndex * 50), 50, 400];   
-                tl = [300 + (slideIndex * 50), 50, -50]; 
-            } else if (destIndex === 4) { // Architecture
-                tp = [600, 50, 450];
-                tl = [600, 50, -100];
-            } else if (destIndex === 5) { // Resume
-                tp = [-600, 50, 450]; 
-                tl = [-600, 50, -100];
-            } else if (destIndex === 6) { // Dynamic Thread
-                tp = [900, 50, 500];
-                tl = [900, 50, -150];
-            } else if (destIndex === 7) { // Nexus
-                tp = [-900 + (slideIndex * 100), 50, 500];
-                tl = [-900 + (slideIndex * 100), 50, -150];
-            } else if (destIndex === 8) { // Global Canvas Delegation
-                tp = [1200, 50, 600]; 
-                tl = [1200, 50, -200];
-            } else if (destIndex >= 9) { // Data Ingestion
-                tp = [-1200, 50, 600]; 
-                tl = [-1200, 50, -200];
+            const pathItem = pathConfig.find(p => p.pageIndex === destIndex);
+            if (pathItem) {
+                const targetId = pathItem.targetId;
+                let pos = [0, 50, 0];
+                if (targetId.startsWith("plaque")) {
+                    const p = plaquesConfig.find(x => x.id === targetId);
+                    if (p) pos = p.position;
+                } else if (targetId.startsWith("wall")) {
+                    const w = wallsConfig.find(x => x.id === targetId);
+                    if (w) pos = w.position;
+                } else if (targetId.startsWith("orb")) {
+                    const o = orbsConfig.find(x => x.id === targetId);
+                    if (o) pos = o.position;
+                } else if (targetId.startsWith("plane")) {
+                    const p = planesConfig.find(x => x.id === targetId);
+                    if (p) pos = p.position;
+                }
+                
+                tp = [pos[0], pos[1], pos[2] + 400];
+                tl = [pos[0], pos[1], pos[2]];
+            } else {
+                if (destIndex === 0) { // Landing
+                    tp = [0, 50, 600];
+                    tl = [0, 50, 0];
+                } else if (destIndex === 1) { // ChatBot
+                    tp = [-300, 50, 400];
+                    tl = [-300, 50, -50];
+                } else if (destIndex === 2) { // Particle Sandbox
+                    tp = [0, 800, 1800]; 
+                    tl = [0, 100, -200];
+                } else if (destIndex === 3) { // Video
+                    tp = [300 + (slideIndex * 50), 50, 400];   
+                    tl = [300 + (slideIndex * 50), 50, -50]; 
+                } else if (destIndex === 4) { // Architecture
+                    tp = [600, 50, 450];
+                    tl = [600, 50, -100];
+                } else if (destIndex === 5) { // Resume
+                    tp = [-600, 50, 450]; 
+                    tl = [-600, 50, -100];
+                } else if (destIndex === 6) { // Dynamic Thread
+                    tp = [900, 50, 500];
+                    tl = [900, 50, -150];
+                } else if (destIndex === 7) { // Nexus
+                    tp = [-900 + (slideIndex * 100), 50, 500];
+                    tl = [-900 + (slideIndex * 100), 50, -150];
+                } else if (destIndex === 8) { // Global Canvas Delegation
+                    tp = [1200, 50, 600]; 
+                    tl = [1200, 50, -200];
+                } else if (destIndex >= 9) { // Data Ingestion
+                    tp = [-1200, 50, 600]; 
+                    tl = [-1200, 50, -200];
+                }
             }
 
             baseTp = [...tp];
