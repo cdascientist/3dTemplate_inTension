@@ -2,25 +2,22 @@ import React, { useEffect, useState } from 'react';
 import { Hand, Move, ZoomIn } from 'lucide-react';
 
 export const InteractiveGesturePage: React.FC = React.memo(() => {
-    const [isInteracting, setIsInteracting] = useState(false);
+    const [isVisible, setIsVisible] = useState(true);
 
     useEffect(() => {
-        let timeout: any;
+        const initialDelay = setTimeout(() => {
+            setIsVisible(false);
+        }, 5000);
+
         const handlePan = (e: any) => {
             const { type } = e.detail;
             if (type === 'panstart' || type === 'panmove') {
-                setIsInteracting(true);
-                clearTimeout(timeout);
-                timeout = setTimeout(() => setIsInteracting(false), 500); // safety fallback
-            } else if (type === 'panend') {
-                setIsInteracting(false);
+                setIsVisible(false);
             }
         };
 
         const handleDoubleTap = () => {
-            setIsInteracting(true);
-            clearTimeout(timeout);
-            timeout = setTimeout(() => setIsInteracting(false), 800);
+            setIsVisible(false);
         };
 
         window.addEventListener('hammer-pan', handlePan);
@@ -28,14 +25,14 @@ export const InteractiveGesturePage: React.FC = React.memo(() => {
         return () => {
             window.removeEventListener('hammer-pan', handlePan);
             window.removeEventListener('hammer-doubletap', handleDoubleTap);
-            clearTimeout(timeout);
+            clearTimeout(initialDelay);
         };
     }, []);
 
     return (
         <div className="absolute inset-0 flex flex-col items-start justify-center w-full h-full p-6 md:p-12 pointer-events-none select-none z-20">
             {/* iOS-like gesture guide */}
-            <div className={`transition-opacity duration-500 ease-in-out flex flex-col items-start justify-center text-left max-w-sm ${isInteracting ? 'opacity-10' : 'opacity-90'}`}>
+            <div className={`transition-opacity duration-1000 ease-in-out flex flex-col items-start justify-center text-left max-w-sm ${isVisible ? 'opacity-90' : 'opacity-0'}`}>
                 
                 <div className="relative mb-6 ml-4">
                     <div className="absolute inset-0 bg-cyan-500/20 blur-xl rounded-full animate-pulse z-0"></div>
