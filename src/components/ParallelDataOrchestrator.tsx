@@ -265,6 +265,10 @@ export const ParallelDataOrchestrator: React.FC = () => {
     setPlanesConfig((prev) => prev.map(p => p.id === id ? { ...p, scale } : p));
   };
 
+  const updatePlaqueScale = (id: string, scale: number) => {
+    setPlaquesConfig((prev) => prev.map(p => p.id === id ? { ...p, scale } : p));
+  };
+
   const saveConfigToFile = () => {
     const configData = {
       sandboxDensity,
@@ -949,9 +953,9 @@ export const ParallelDataOrchestrator: React.FC = () => {
                                  <div className="flex flex-col gap-1 mt-2 p-3 bg-fuchsia-900/10 rounded-lg border border-fuchsia-500/20">
                                    <label className="text-fuchsia-300/80 font-mono text-[10px] uppercase tracking-widest flex justify-between">
                                      <span>Scale Multiplier</span>
-                                     <input type="number" className="bg-transparent text-right w-16 text-fuchsia-400 focus:outline-none border-b border-fuchsia-500/30" value={Number(targetItem.scale.toFixed(2))} onChange={(e) => isWall ? updateWallScale(targetItem.id, Number(e.target.value)) : updatePlaneScale(targetItem.id, Number(e.target.value))} />
+                                     <input type="number" className="bg-transparent text-right w-16 text-fuchsia-400 focus:outline-none border-b border-fuchsia-500/30" value={Number(targetItem.scale.toFixed(2))} onChange={(e) => isWall ? updateWallScale(targetItem.id, Number(e.target.value)) : isPlaque ? updatePlaqueScale(targetItem.id, Number(e.target.value)) : updatePlaneScale(targetItem.id, Number(e.target.value))} />
                                    </label>
-                                   <input type="range" className="w-full h-1 bg-cyan-900 rounded-lg appearance-none cursor-pointer accent-cyan-400" min="0.1" max="1000" step="1" value={targetItem.scale} onChange={(e) => isWall ? updateWallScale(targetItem.id, Number(e.target.value)) : updatePlaneScale(targetItem.id, Number(e.target.value))} />
+                                   <input type="range" className="w-full h-1 bg-cyan-900 rounded-lg appearance-none cursor-pointer accent-cyan-400" min="0.1" max="1000" step="1" value={targetItem.scale} onChange={(e) => isWall ? updateWallScale(targetItem.id, Number(e.target.value)) : isPlaque ? updatePlaqueScale(targetItem.id, Number(e.target.value)) : updatePlaneScale(targetItem.id, Number(e.target.value))} />
                                  </div>
                                )}
                              </div>

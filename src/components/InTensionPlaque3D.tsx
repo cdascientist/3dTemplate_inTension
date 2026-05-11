@@ -22,7 +22,8 @@ export const InTensionPlaque3D: React.FC<InTensionPlaqueProperties> = ({
     useEffect(() => {
         const anisotropy = gl.capabilities.getMaxAnisotropy();
         const plaque = new InTensionPlaque({
-            text: 'InTension',
+            textLeft: 'In',
+            textRight: 'Tension',
             width: 50.0,
             height: 30.0,
             depth: 4.5,
