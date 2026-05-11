@@ -320,7 +320,7 @@ export const ParallelDataOrchestrator: React.FC = () => {
       for (let i = 0; i < PARALLEL_WORKER_THREAD_POOL_SIZE; i++) {
         try {
           const cachedData = await getChunkFromDB(
-            `chunk_${i}_multi_${BASE_POLYGON_MULTIPLIER}`,
+            `chunk_${i}_multi_v4_${BASE_POLYGON_MULTIPLIER}`,
           );
           if (cachedData) {
             temporaryStagingAggregatorBuffer.push(cachedData);
@@ -373,39 +373,45 @@ export const ParallelDataOrchestrator: React.FC = () => {
           contiguousVertexIndex++
         ) {
           const idx = contiguousVertexIndex * 3;
+          
           let x, y, z;
           const seed = Math.random();
 
-          if (seed < 0.20) {
+          if (seed < 0.15) {
             // Floor
             x = (Math.random() - 0.5) * 16000;
             y = -4000 + (Math.random() - 0.5) * 200;
             z = (Math.random() - 0.5) * 16000;
-          } else if (seed < 0.40) {
+          } else if (seed < 0.30) {
             // Ceiling
             x = (Math.random() - 0.5) * 16000;
             y = 4000 + (Math.random() - 0.5) * 200;
             z = (Math.random() - 0.5) * 16000;
-          } else if (seed < 0.55) {
+          } else if (seed < 0.45) {
             // Left Wall
             x = -8000 + (Math.random() - 0.5) * 200;
             y = (Math.random() - 0.5) * 8000;
             z = (Math.random() - 0.5) * 16000;
-          } else if (seed < 0.70) {
+          } else if (seed < 0.60) {
             // Right Wall
             x = 8000 + (Math.random() - 0.5) * 200;
             y = (Math.random() - 0.5) * 8000;
             z = (Math.random() - 0.5) * 16000;
-          } else if (seed < 0.85) {
+          } else if (seed < 0.75) {
             // Front Wall
             x = (Math.random() - 0.5) * 16000;
             y = (Math.random() - 0.5) * 8000;
             z = -8000 + (Math.random() - 0.5) * 200;
-          } else {
+          } else if (seed < 0.90) {
             // Back Wall
             x = (Math.random() - 0.5) * 16000;
             y = (Math.random() - 0.5) * 8000;
             z = 8000 + (Math.random() - 0.5) * 200;
+          } else {
+            // Floating interior particles (dust/stars effect)
+            x = (Math.random() - 0.5) * 16000;
+            y = (Math.random() - 0.5) * 8000;
+            z = (Math.random() - 0.5) * 16000;
           }
 
           verticesArray[idx] = x;
@@ -446,7 +452,7 @@ export const ParallelDataOrchestrator: React.FC = () => {
           setOperationalCount((prev) => prev + 1);
 
           saveChunkToDB(
-            `chunk_${payload.chunkIndexIdentifier}_multi_${BASE_POLYGON_MULTIPLIER}`,
+            `chunk_${payload.chunkIndexIdentifier}_multi_v4_${BASE_POLYGON_MULTIPLIER}`,
             payload,
           ).catch(console.error);
         });

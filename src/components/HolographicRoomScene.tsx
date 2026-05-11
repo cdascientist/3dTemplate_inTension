@@ -81,7 +81,7 @@ export const HolographicRoomScene: React.FC<HolographicRoomSceneProperties> = Re
                 const p = plaquesConfig.find(x => x.id === targetId);
                 if (p) {
                     pos = p.position;
-                    offsetZ = 90 * p.scale;
+                    offsetZ = 120 * p.scale;
                     offsetY = 0;
                 }
             } else if (targetId.startsWith("wall")) {
@@ -182,7 +182,7 @@ export const HolographicRoomScene: React.FC<HolographicRoomSceneProperties> = Re
                     const p = plaquesConfig.find(x => x.id === targetId);
                     if (p) {
                         pos = p.position;
-                        offsetZ = 90 * p.scale;
+                        offsetZ = 120 * p.scale;
                         offsetY = 0;
                     }
                 } else if (targetId.startsWith("wall")) {

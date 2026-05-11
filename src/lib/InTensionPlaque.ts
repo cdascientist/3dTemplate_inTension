@@ -353,17 +353,17 @@ export class InTensionPlaque extends THREE.Group {
       this.internalPointLight.position.set(0, 0, 0);
       this.add(this.internalPointLight);
 
-      const topLeftLight = new THREE.DirectionalLight(0xe0b0ff, 6.0);
-      topLeftLight.position.set(-o.width! / 2 - 2, o.height! / 2 + 2, o.depth! / 2 + 5);
-      topLeftLight.target.position.set(0, 0, 0);
-      this.add(topLeftLight);
-      this.add(topLeftLight.target);
+      const upperLight = new THREE.DirectionalLight(0xe0b0ff, 6.0);
+      upperLight.position.set(0, o.height! / 2 + 5, o.depth! / 2 + 5);
+      upperLight.target.position.set(0, 0, 0);
+      this.add(upperLight);
+      this.add(upperLight.target);
 
-      const topRightLight = new THREE.DirectionalLight(0xffb0ff, 6.0);
-      topRightLight.position.set(o.width! / 2 + 2, o.height! / 2 + 2, o.depth! / 2 + 5);
-      topRightLight.target.position.set(0, 0, 0);
-      this.add(topRightLight);
-      this.add(topRightLight.target);
+      const lowerLight = new THREE.DirectionalLight(0xffb0ff, 6.0);
+      lowerLight.position.set(0, -o.height! / 2 - 5, o.depth! / 2 + 5);
+      lowerLight.target.position.set(0, 0, 0);
+      this.add(lowerLight);
+      this.add(lowerLight.target);
     }
   }
 
