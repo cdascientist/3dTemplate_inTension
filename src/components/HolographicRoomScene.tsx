@@ -68,7 +68,8 @@ export const HolographicRoomScene: React.FC<HolographicRoomSceneProperties> = Re
     }, [gl]);
 
     const initialCamState = React.useMemo(() => {
-        let tp = [0, 50, 600];
+        const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+        let tp = [0, 50, isMobile ? 420 : 600];
         let tl = [0, 50, 0];
         let offsetX = 0;
         const pathItem = pathConfig.find(p => p.pageIndex === 0);
@@ -212,7 +213,8 @@ export const HolographicRoomScene: React.FC<HolographicRoomSceneProperties> = Re
                 tl = [pos[0] + offsetX, pos[1], pos[2]];
             } else {
                 if (destIndex === 0) { // Landing
-                    tp = [0, 50, 600];
+                    const isMobile = window.innerWidth < 768;
+                    tp = [0, 50, isMobile ? 420 : 600];
                     tl = [0, 50, 0];
                 } else if (destIndex === 1) { // ChatBot
                     tp = [-300, 50, 400];
