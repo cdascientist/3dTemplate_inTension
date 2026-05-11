@@ -67,10 +67,64 @@ export const HolographicRoomScene: React.FC<HolographicRoomSceneProperties> = Re
         });
     }, [gl]);
 
+    const initialCamState = React.useMemo(() => {
+        let tp = [0, 50, 600];
+        let tl = [0, 50, 0];
+        let offsetX = 0;
+        const pathItem = pathConfig.find(p => p.pageIndex === 0);
+        if (pathItem) {
+            const targetId = pathItem.targetId;
+            let pos = [0, 50, 0];
+            let offsetZ = 90;
+            let offsetY = 4;
+            if (targetId.startsWith("plaque")) {
+                const p = plaquesConfig.find(x => x.id === targetId);
+                if (p) {
+                    pos = p.position;
+                    offsetZ = 200 * p.scale;
+                    offsetY = 0;
+                }
+            } else if (targetId.startsWith("wall")) {
+                const w = wallsConfig.find(x => x.id === targetId);
+                if (w) {
+                    pos = w.position;
+                    offsetZ = 150 + w.scale;
+                    offsetY = 0;
+                }
+            } else if (targetId.startsWith("orb")) {
+                const o = orbsConfig.find(x => x.id === targetId);
+                if (o) {
+                    pos = o.position;
+                    offsetZ = 400; // Orbs are standard sized points of interest
+                    offsetY = 0;
+                }
+            } else if (targetId.startsWith("plane")) {
+                const p = planesConfig.find(x => x.id === targetId);
+                if (p) {
+                    pos = p.position;
+                    offsetZ = 600;
+                    offsetY = 100;
+                }
+            }
+            tp = [pos[0] + offsetX, pos[1] + offsetY, pos[2] + offsetZ];
+            tl = [pos[0] + offsetX, pos[1], pos[2]];
+        }
+        return { tp, tl };
+    }, [pathConfig, plaquesConfig, wallsConfig, orbsConfig, planesConfig]);
+
     // Smooth main-thread camera pan state
-    const targetCameraPos = useRef(new THREE.Vector3(0, 50, 600));
-    const targetLookAt = useRef(new THREE.Vector3(0, 50, 0));
-    const currentLookAt = useRef(new THREE.Vector3(0, 50, 0));
+    const targetCameraPos = useRef(new THREE.Vector3(initialCamState.tp[0], initialCamState.tp[1], initialCamState.tp[2]));
+    const targetLookAt = useRef(new THREE.Vector3(initialCamState.tl[0], initialCamState.tl[1], initialCamState.tl[2]));
+    const currentLookAt = useRef(new THREE.Vector3(initialCamState.tl[0], initialCamState.tl[1], initialCamState.tl[2]));
+
+    useEffect(() => { // Init camera immediately to prevent jump
+        camera.position.set(initialCamState.tp[0], initialCamState.tp[1], initialCamState.tp[2]);
+        camera.lookAt(initialCamState.tl[0], initialCamState.tl[1], initialCamState.tl[2]);
+        // Update refs on hot reload or config change
+        targetCameraPos.current.set(initialCamState.tp[0], initialCamState.tp[1], initialCamState.tp[2]);
+        targetLookAt.current.set(initialCamState.tl[0], initialCamState.tl[1], initialCamState.tl[2]);
+        currentLookAt.current.set(initialCamState.tl[0], initialCamState.tl[1], initialCamState.tl[2]);
+    }, [initialCamState, camera]);
 
     const posTrajectoryTime = useRef<number>(0);
     const lookTrajectoryTime = useRef<number>(0);
@@ -93,8 +147,8 @@ export const HolographicRoomScene: React.FC<HolographicRoomSceneProperties> = Re
         handleResize(); // trigger immediately
 
         let currentRoomDest = 0;
-        let baseTp = [0, 50, 600];
-        let baseTl = [0, 50, 0];
+        let baseTp = [...initialCamState.tp];
+        let baseTl = [...initialCamState.tl];
 
         const onRoomChange = (e: any) => {
             const destIndex = e.detail?.sectionIndex ?? e.detail;
@@ -107,22 +161,41 @@ export const HolographicRoomScene: React.FC<HolographicRoomSceneProperties> = Re
             if (pathItem) {
                 const targetId = pathItem.targetId;
                 let pos = [0, 50, 0];
+                let offsetZ = 90;
+                let offsetY = 4;
+                let offsetX = 0;
                 if (targetId.startsWith("plaque")) {
                     const p = plaquesConfig.find(x => x.id === targetId);
-                    if (p) pos = p.position;
+                    if (p) {
+                        pos = p.position;
+                        offsetZ = 200 * p.scale;
+                        offsetY = 0;
+                    }
                 } else if (targetId.startsWith("wall")) {
                     const w = wallsConfig.find(x => x.id === targetId);
-                    if (w) pos = w.position;
+                    if (w) {
+                        pos = w.position;
+                        offsetZ = 150 + w.scale;
+                        offsetY = 0;
+                    }
                 } else if (targetId.startsWith("orb")) {
                     const o = orbsConfig.find(x => x.id === targetId);
-                    if (o) pos = o.position;
+                    if (o) {
+                        pos = o.position;
+                        offsetZ = 400; // Orbs are standard sized points of interest
+                        offsetY = 0;
+                    }
                 } else if (targetId.startsWith("plane")) {
                     const p = planesConfig.find(x => x.id === targetId);
-                    if (p) pos = p.position;
+                    if (p) {
+                        pos = p.position;
+                        offsetZ = 600;
+                        offsetY = 100;
+                    }
                 }
                 
-                tp = [pos[0], pos[1], pos[2] + 400];
-                tl = [pos[0], pos[1], pos[2]];
+                tp = [pos[0] + offsetX, pos[1] + offsetY, pos[2] + offsetZ];
+                tl = [pos[0] + offsetX, pos[1], pos[2]];
             } else {
                 if (destIndex === 0) { // Landing
                     tp = [0, 50, 600];
