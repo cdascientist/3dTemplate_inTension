@@ -81,7 +81,7 @@ export const HolographicRoomScene: React.FC<HolographicRoomSceneProperties> = Re
                 const p = plaquesConfig.find(x => x.id === targetId);
                 if (p) {
                     pos = p.position;
-                    offsetZ = 200 * p.scale;
+                    offsetZ = 90 * p.scale;
                     offsetY = 0;
                 }
             } else if (targetId.startsWith("wall")) {
@@ -139,12 +139,26 @@ export const HolographicRoomScene: React.FC<HolographicRoomSceneProperties> = Re
     useEffect(() => {
         const handleResize = () => {
             if (camera instanceof THREE.PerspectiveCamera) {
-                camera.fov = window.innerWidth < 768 ? 100 : 75;
+                // Remove fixed FOV setting on resize as we want zoom to persist, or base it on zoom level.
+                // Actually, let's keep it but just make sure our zoom applies.
+            }
+        };
+        // We will manage FOV with scroll
+        const handleWheel = (e: WheelEvent) => {
+            if (camera instanceof THREE.PerspectiveCamera) {
+                camera.fov += e.deltaY * 0.05;
+                camera.fov = Math.max(10, Math.min(150, camera.fov));
                 camera.updateProjectionMatrix();
             }
         };
         window.addEventListener('resize', handleResize);
-        handleResize(); // trigger immediately
+        window.addEventListener('wheel', handleWheel, { passive: true });
+        
+        // Initial setup
+        if (camera instanceof THREE.PerspectiveCamera) {
+            camera.fov = window.innerWidth < 768 ? 100 : 75;
+            camera.updateProjectionMatrix();
+        }
 
         let currentRoomDest = 0;
         let baseTp = [...initialCamState.tp];
@@ -168,7 +182,7 @@ export const HolographicRoomScene: React.FC<HolographicRoomSceneProperties> = Re
                     const p = plaquesConfig.find(x => x.id === targetId);
                     if (p) {
                         pos = p.position;
-                        offsetZ = 200 * p.scale;
+                        offsetZ = 90 * p.scale;
                         offsetY = 0;
                     }
                 } else if (targetId.startsWith("wall")) {
@@ -277,6 +291,7 @@ export const HolographicRoomScene: React.FC<HolographicRoomSceneProperties> = Re
         window.addEventListener('hammer-pan', onPan);
         window.addEventListener('hammer-doubletap', onDoubleTap);
         return () => {
+            window.removeEventListener('wheel', handleWheel);
             window.removeEventListener('resize', handleResize);
             window.removeEventListener('fullpage-room-change', onRoomChange);
             window.removeEventListener('hammer-pan', onPan);
