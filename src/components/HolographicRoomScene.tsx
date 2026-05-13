@@ -9,6 +9,8 @@ import { HugeParticleOrb } from './HugeParticleOrb';
 import { positionWorkerCode, lookAtWorkerCode } from '../workers/PanningWorker';
 import { InTensionPlaque3D } from './InTensionPlaque3D';
 
+import { FloorPlan3D } from './FloorPlan3D';
+
 interface HolographicRoomSceneProperties {
     aggregatedParallelDataChunksMatrix: any[];
     sandboxDensity?: number;
@@ -169,7 +171,8 @@ export const HolographicRoomScene: React.FC<HolographicRoomSceneProperties> = Re
             const destIndex = e.detail?.sectionIndex ?? e.detail;
             const slideIndex = e.detail?.slideIndex ?? 0;
             currentRoomDest = destIndex;
-            let tp = [0, 50, 600];
+            const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+            let tp = [0, 50, isMobile ? 420 : 600];
             let tl = [0, 50, 0];
 
             const pathItem = pathConfig.find(p => p.pageIndex === destIndex);
@@ -444,20 +447,7 @@ export const HolographicRoomScene: React.FC<HolographicRoomSceneProperties> = Re
                 </mesh>
             )}
 
-            {wallsConfig.map((wall) => (
-                <ParticleWall 
-                    key={wall.id}
-                    position={wall.position}
-                    scale={wall.scale}
-                    baseScale={sandboxWallScale}
-                    density={sandboxDensity}
-                    monolithicVertexFloatBuffer={monolithicVertexFloatBuffer}
-                    monolithicColorFloatBuffer={monolithicColorFloatBuffer}
-                    massiveConcatenatedVerticesCount={massiveConcatenatedVerticesCount}
-                    isHighlighted={selectedElementId === wall.id}
-                    onClick={() => handleElementClick(wall.id)}
-                />
-            ))}
+            <FloorPlan3D />
 
             {planesConfig.map((plane) => (
                 <mesh 
